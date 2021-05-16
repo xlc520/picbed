@@ -9,7 +9,7 @@
 
 .. note::
 
-    - 当前内容适用于picbed的管理员
+    - 当前内容适用于图床管理员
     
     - 各配置项提及的半角逗号即英文输入法下的逗号
 
@@ -60,18 +60,32 @@
 
   定义通过POST表单获取图片数据的字段，默认字段是picbed， **不建议** 修改！
 
+- 存储后端（默认存储在）
+
+  选择保存图片的扩展钩子，本地、又拍云、GitHub等，至少有一个，否则无法保存
+  图片，其扩展名就是sender，许多地方都有使用。
+
 - 用户分组上传
 
   用户管理中可以给用户贴上标签，相当于分组了，在上传设置中配置分组上传，
   其格式是: **label:sender**, label是标签名、sender是存储后端的钩子名，
   允许使用逗号分隔多个规则，比如： `test:up2local`
 
-  一个特殊情况，匿名用户的label总是anonymous！
+  **一个特殊情况，匿名用户的label总是anonymous！**
 
-- 存储后端（默认存储在）
+  另外，用户允许设置多个标签，如果此处设定了分组上传，那么用户标签只要发现匹配则选定对应
+  上传后端，不再进行后续匹配。
 
-  选择保存图片的扩展钩子，本地、又拍云、GitHub等，至少有一个，否则无法保存
-  图片，其扩展名就是sender，许多地方都有使用。
+- 分组上传限制
+
+  参照上条，用户可以贴上label标签，按照标签限制上传图片的数量，-1禁止上传，0无限制，大于0
+  表示只能上传的最大数量。
+
+  用户上传时读取对应label的限制数量，由于用户可以设置多个label，所以任意label达到限制后，
+  均会触发上传数量上限异常。
+
+  不过存在一条已知问题：在WEB首页并发上传多图时，如果label限制大于0，会绕过限制，同时上传的
+  图片都会成功。
 
 .. _picbed-admin-system:
 
@@ -142,7 +156,7 @@ sendmail提供三种邮件发送方式：本地、诏预开放平台（自用）
 
   这里需要提供一个API_USER及对应的API_KEY，还一个可选的发件人（最近发件人邮箱后缀是API_USER对应的发信域）
 
-ps：可以通过安装 `picbed-smtp <https://github.com/staugur/picbed-smtp>`_
+ps：可以通过安装 `picbed-smtp <https://github.com/sapicd/smtp>`_
 扩展钩子发送邮件，它通过邮箱SMTP服务发送，所以例如QQ、腾讯企业邮、网易、
 新浪、阿里云等邮箱都可作为发送者。
 
@@ -161,7 +175,7 @@ ps：可以通过安装 `picbed-smtp <https://github.com/staugur/picbed-smtp>`_
 注意，如果程序在virtualenv、venv虚拟环境下启动，则会安装到其环境下，否则
 安装到用户家目录下。
 
-此功能可从 `Awesome for picbed <https://github.com/staugur/picbed-awesome/>`_
+此功能可从 `Awesome for sapic <https://github.com/sapicd/awesome/>`_
 获取经过审核且开源的第三方列表，像应用商店似的进行安装，不过也保留了
 原来的方式。
 
@@ -196,4 +210,4 @@ ps：可以通过安装 `picbed-smtp <https://github.com/staugur/picbed-smtp>`_
 
 - 验证过邮箱的用户邮箱字段是绿色的。
 
-- 标签一栏允许编辑（可置空），用以设置用户分组
+- 标签一栏允许编辑（可置空），用以设置用户分组，允许使用半角逗号分割多个标签

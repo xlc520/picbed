@@ -3,7 +3,7 @@
 from os.path import abspath, dirname, join, exists, isdir
 from os import getenv, mkdir
 from multiprocessing import cpu_count
-from config import GLOBAL
+from config import GLOBAL, envs
 
 
 def delete_hookloadtime():
@@ -12,8 +12,13 @@ def delete_hookloadtime():
     del s['hookloadtime']
 
 
-IS_RUN = True if getenv("picbed_isrun") == "true" else False
-CPU_COUNT = int(getenv("picbed_cpucount") or (cpu_count() * 2 + 1))
+IS_RUN = True if (
+    getenv("sapic_isrun") or getenv("picbed_isrun")
+) == "true" else False
+
+CPU_COUNT = int(
+    envs.get("sapic_cpucount") or envs.get("picbed_cpucount") or cpu_count()
+)
 
 LOGSDIR = join(dirname(abspath(__file__)), "logs")
 if not exists(LOGSDIR):

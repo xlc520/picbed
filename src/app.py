@@ -22,7 +22,7 @@ from config import GLOBAL
 from version import __version__
 
 __author__ = 'staugur'
-__email__ = 'staugur@saintic.com'
+__email__ = 'me@tcw.im'
 __date__ = '2019-12-20'
 __doc__ = 'Flask-based web self-built pictures bed'
 
@@ -32,7 +32,7 @@ app.config.update(
     SECRET_KEY=GLOBAL["SecretKey"],
     MAX_UPLOAD=GLOBAL["MaxUpload"],
     MAX_CONTENT_LENGTH=GLOBAL["MaxUpload"] * 1024 * 1024,
-    DOCS_BASE_URL="https://picbed.rtfd.vip",
+    DOCS_BASE_URL="https://sapic.rtfd.vip",
     UPLOAD_FOLDER="upload",
 )
 
@@ -63,7 +63,7 @@ def before_request():
     g.userinfo = Attribute(change_userinfo(g.userinfo))
     g.is_admin = is_true(g.userinfo.is_admin)
     g.next = get_redirect_url()
-    g.site_name = g.cfg.title_name or "picbed"
+    g.site_name = g.cfg.title_name or "sapic"
     g.hm = hm
 
 
@@ -97,7 +97,8 @@ def handle_error(e):
     name = e.name
     if request.path.startswith("/api/"):
         return jsonify(dict(msg=name, code=code)), code
-    return render_template("public/error.html", code=code, name=name), code
+    else:
+        return render_template("public/error.html", code=code, name=name), code
 
 
 @app.errorhandler(ApiError)

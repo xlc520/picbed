@@ -1,27 +1,36 @@
 .. _picbed-usgae-gocli:
 
 ======================
-使用说明 - picbed-cli
+使用说明 - sapicli
 ======================
 
 变更说明
 ========
 
 picbed图床客户端上传工具cli.py，之前集成在
-`picbed源仓库 <https://github.com/staugur/picbed/tree/1.10.5/cli>`_ 中，使用
+`picbed源仓库 <https://github.com/sapicd/sapic/tree/1.10.5/cli>`_ 中，使用
 python编写，其跨平台需要Python环境支持，相对麻烦。
 
 不过2020-11-26开始（或者说自v1.11.0开始），picbed源仓库移除cli.py，且使用golang编写的
-`picbed-cli <https://github.com/staugur/picbed-cli>`_ 发布初始版本，凭借golang的
+`picbed-cli <https://github.com/sapicd/cli>`_ 发布初始版本，凭借golang的
 特性，打包后的命令天然具有跨平台能力，且已打包win、mac、linux三端压缩包，可在release中
 直接下载，实现了cli.py所有功能！
 
 cli.py的使用说明仍然可以 :doc:`在这里 <cli-py>` 找到。
 
+.. versionchanged:: 0.5.0
+
+    为适应 v1.12.0 正式名称 sapic ，此 picbed-cli 命令行客户端程序自 v0.5 同步改名
+    为 sapicli ，源码仓库是： https://github.com/sapicd/cli
+
+.. versionchanged:: 0.5.2
+
+    发版时tag增加 `v` 前缀，以便 go module 使用。
+
 不同点
 -------
 
-picbed-cli（golang）比之cli.py的细节差异
+sapicli（golang）比之cli.py的细节差异
 
 - 新选项 `-i/--info` 会输出编译时Go版本及你的操作系统类型、架构
 
@@ -33,12 +42,12 @@ picbed-cli（golang）比之cli.py的细节差异
 
 - 输出风格 `-s/--style` 选项定制功能的更改
 
-  虽然都是使用Python模块，但cli.py要求格式为 `mod.func` ，而picbed-cli要求格式为
+  虽然都是使用Python模块，但cli.py要求格式为 `mod.func` ，而 sapicli 要求格式为
   `mod` 。
 
   cli.py由python编写，可以直接导入你的mod模块，执行func函数，直接传递list数据。
 
-  picbed-cli由golang编写，通用外部命令调用方式执行你的mod模块，方法是：
+  sapicli 由golang编写，通用外部命令调用方式执行你的mod模块，方法是：
   `python -m mod` ，通过位置参数传参，数据格式是json，需要使用 `json.loads` 方法
   反序列化为list再处理，示例：
 
@@ -70,7 +79,7 @@ picbed-cli（golang）比之cli.py的细节差异
 下载安装
 =========
 
-请转至 `picbed-cli release <https://github.com/staugur/picbed-cli/releases>`_
+请转至 `cli release <https://github.com/sapicd/cli/releases>`_
 发行版下载页根据你的操作系统选择压缩包下载到本地，比如windows 10、windows 7用户请下载
 `xxx-windows-amd64.zip` ，macOS用户请下载 `xxx-darwin-amd64.tar.gz`
 
@@ -84,21 +93,30 @@ ps: 上述github页面如果访问速度不佳，可以点击下列文件名下�
 ======================================= ================================
 文件名                                   MD5
 ======================================= ================================
-picbed-cli.0.4.0-linux-amd64.tar.gz_    82bf4fb8bd683336af782e85fef1dbf0
-picbed-cli.0.4.0-darwin-amd64.tar.gz_   128f9b94306764cdb902b153da9cdfdb
-picbed-cli.0.4.0-windows-amd64.zip_     d46702262048143b211839ed3d53a8a2
-picbed-cli.0.4.2-linux-amd64.tar.gz_    2d95386da32ac1a7e81247f325468847
-picbed-cli.0.4.2-darwin-amd64.tar.gz_   f59a03443e70341fb925b63d3dcaf482
-picbed-cli.0.4.2-windows-amd64.zip_     d70185370d6658e9a8b37fcd9323ef74
+sapicli.0.5.2-linux-amd64.tar.gz_       9f0d49c7bee77ac2b631f8aba006a3a5
+sapicli.0.5.2-darwin-amd64.tar.gz_      ea51cfe839d64b9189ce1e2ddf42dde6
+sapicli.0.5.2-windows-amd64.zip_        88bb1637c10afed5d974e73bc0e36b13
+
+sapicli.0.5.1-linux-amd64.tar.gz_       f105234f5b229cbde29401a63a992d4f
+sapicli.0.5.1-darwin-amd64.tar.gz_      41712bcf7b0f31c4bdb3446d7643a850
+sapicli.0.5.1-windows-amd64.zip_        a7185dc5a514d0a436fe7dc7db499230
+
+sapicli.0.5.0-linux-amd64.tar.gz_       fc02ddd2276f0d099c9b8419f6ff1ceb
+sapicli.0.5.0-darwin-amd64.tar.gz_      e92461ae95c8bd8050b06bb94e14d44f
+sapicli.0.5.0-windows-amd64.zip_        5058890071c24e121f6109d3087eccaf
 ======================================= ================================
 
-.. _picbed-cli.0.4.0-linux-amd64.tar.gz: https://static.saintic.com/download/picbed-cli/picbed-cli.0.4.0-linux-amd64.tar.gz
-.. _picbed-cli.0.4.0-darwin-amd64.tar.gz: https://static.saintic.com/download/picbed-cli/picbed-cli.0.4.0-darwin-amd64.tar.gz
-.. _picbed-cli.0.4.0-windows-amd64.zip: https://static.saintic.com/download/picbed-cli/picbed-cli.0.4.0-windows-amd64.zip
+.. _sapicli.0.5.2-linux-amd64.tar.gz: https://static.saintic.com/download/sapicli/sapicli.0.5.2-linux-amd64.tar.gz
+.. _sapicli.0.5.2-darwin-amd64.tar.gz: https://static.saintic.com/download/sapicli/sapicli.0.5.2-darwin-amd64.tar.gz
+.. _sapicli.0.5.2-windows-amd64.zip: https://static.saintic.com/download/sapicli/sapicli.0.5.2-windows-amd64.zip
 
-.. _picbed-cli.0.4.2-linux-amd64.tar.gz: https://static.saintic.com/download/picbed-cli/picbed-cli.0.4.2-linux-amd64.tar.gz
-.. _picbed-cli.0.4.2-darwin-amd64.tar.gz: https://static.saintic.com/download/picbed-cli/picbed-cli.0.4.2-darwin-amd64.tar.gz
-.. _picbed-cli.0.4.2-windows-amd64.zip: https://static.saintic.com/download/picbed-cli/picbed-cli.0.4.2-windows-amd64.zip
+.. _sapicli.0.5.1-linux-amd64.tar.gz: https://static.saintic.com/download/sapicli/sapicli.0.5.1-linux-amd64.tar.gz
+.. _sapicli.0.5.1-darwin-amd64.tar.gz: https://static.saintic.com/download/sapicli/sapicli.0.5.1-darwin-amd64.tar.gz
+.. _sapicli.0.5.1-windows-amd64.zip: https://static.saintic.com/download/sapicli/sapicli.0.5.1-windows-amd64.zip
+
+.. _sapicli.0.5.0-linux-amd64.tar.gz: https://static.saintic.com/download/picbed-cli/sapicli.0.5.0-linux-amd64.tar.gz
+.. _sapicli.0.5.0-darwin-amd64.tar.gz: https://static.saintic.com/download/picbed-cli/sapicli.0.5.0-darwin-amd64.tar.gz
+.. _sapicli.0.5.0-windows-amd64.zip: https://static.saintic.com/download/picbed-cli/sapicli.0.5.0-windows-amd64.zip
 
 .. tip::
 
@@ -107,20 +125,20 @@ picbed-cli.0.4.2-windows-amd64.zip_     d70185370d6658e9a8b37fcd9323ef74
     .. code-block:: bash
 
         brew tap staugur/tap
-        brew install picbed-cli
+        brew install sapicli
 
 命令选项
 ----------
 
 .. code-block:: bash
 
-    $ picbed-cli -h
-    usage: picbed-cli [-h] [-v] [-i] [-u PICBED_URL] [-t PICBED_TOKEN] [-a ALBUM]
+    $ sapicli -h
+    usage: sapicli [-h] [-v] [-i] [-u PICBED_URL] [-t PICBED_TOKEN] [-a ALBUM]
                       [-d DESC] [-e EXPIRE] [-s STYLE] [-c {url,md,rst}]
                       file [file ...]
 
-    Doc to https://picbed.rtfd.vip/cli.html
-    Git to https://github.com/staugur/picbed-cli
+    Doc to https://sapic.rtfd.vip/cli.html
+    Git to https://github.com/sapicd/cli
 
     positional arguments:
       file                  local image file
@@ -129,12 +147,12 @@ picbed-cli.0.4.2-windows-amd64.zip_     d70185370d6658e9a8b37fcd9323ef74
       -h, --help            show this help message and exit
       -v, --version         show cli version and exit
       -i, --info            show full info and exit
-      -u, --picbed-url PICBED_URL
-                            The picbed upload api url.
-                            Or use environment variable: picbed_cli_apiurl
-      -t, --picbed-token PICBED_TOKEN
-                            The picbed LinkToken.
-                            Or use environment variable: picbed_cli_apitoken
+      -u, --sapic-url SAPIC_URL
+                            The sapic upload api url.
+                            Or use environment variable: sapicli_apiurl
+      -t, --sapic-token SAPIC_TOKEN
+                            The sapic LinkToken.
+                            Or use environment variable: sapicli_apitoken
       -a, --album ALBUM     Set image album
       -d, --desc DESC       Set image title(description)
       -e, --expire EXPIRE   Set image expire(seconds)
@@ -146,12 +164,12 @@ picbed-cli.0.4.2-windows-amd64.zip_     d70185370d6658e9a8b37fcd9323ef74
                             for win/mac/linux.
                             By the way, md=markdown, rst=reStructuredText
 
--u: 指定图床的服务地址，http[s]://你的picbed域名[/api/upload]
-    - 可以通过环境变量 **picbed_cli_apiurl** 设定
+-u: 指定图床的服务地址，http[s]://你的picbed(sapic)域名[/api/upload]
+    - 可以通过环境变量 **picbed_cli_apiurl** 或 **sapicli_apiurl** 设定
     - 可以省略http，可以省略末尾/api/upload
 
 -t: 设置LinkToken用以认证、授权，要求拥有 ``api.upload`` 的 ``post`` 权限
-    可以通过环境变量 **picbed_cli_apitoken** 设定
+    可以通过环境变量 **picbed_cli_apitoken** 或 **sapicli_apitoken** 设定
 
 -a: 设置相册名（可以覆盖LinkToken设置的默认相册）
 
@@ -170,7 +188,7 @@ picbed-cli.0.4.2-windows-amd64.zip_     d70185370d6658e9a8b37fcd9323ef74
     - empty: v0.4.1新增，不输出内容
 
     - {DIY}: 编写Python实现自定义输出，其格式是: **module** ，即模块名
-        picbed-cli会使用 `python -m module` 尝试直接执行module模块，通过位置参数
+        sapicli会使用 `python -m module` 尝试直接执行module模块，通过位置参数
         传参是result（json格式，列表/数组格式，每个元素都是Hash字典，是图片上传的响应结果）
 
         示例：
@@ -183,7 +201,7 @@ picbed-cli.0.4.2-windows-amd64.zip_     d70185370d6658e9a8b37fcd9323ef74
             result = loads(argv[1])
             for i in result:
                 print("py mod diy:", i["src"])
-            $ picbed-cli -u xxx -s output upload_file...
+            $ sapicli -u xxx -s output upload_file...
 
 -c: 即开启复制，程序会自动识别操作系统，复制上传后的图片url到系统剪贴板
 
@@ -208,14 +226,15 @@ picbed-cli.0.4.2-windows-amd64.zip_     d70185370d6658e9a8b37fcd9323ef74
 
 - 上传文件名以中文、非英文数字、特殊符号等开头应该会上传失败，不过出现在非开头位置是可以的（会被过滤）
 
-- 如果是windows系统开启-c选项要求上传后复制，非win10用户是没有提示的，此时如果是控制台调用，会出现exit status提示
+- 如果是windows系统开启 `-c` 选项要求上传后复制，非win10用户是没有提示的，此时如果是控制台
+  调用，会出现exit status提示
 
 应用示例
 ==========
 
 .. _picbed-upload-typora:
 
-作为自定义命令在使用Typora时上传图片到picbed
+作为自定义命令在使用Typora时上传图片到图床
 ----------------------------------------------
 
 `Typora <https://typora.io>`_ 是一款跨平台的Markdown编辑器，
@@ -225,16 +244,16 @@ picbed-cli.0.4.2-windows-amd64.zip_     d70185370d6658e9a8b37fcd9323ef74
 
 上传服务：Custom Command
 
-自定义命令：picbed-cli -u {picbed url} -t {LinkToken} -s typora
+自定义命令：`sapicli -u {picbed url} -t {LinkToken} -s typora`
 
 测试：点击『验证图片上传选项』按钮，验证是否成功。
 
 .. _picbed-upload-rightmenu-windows:
 
-Windows系统的图片文件添加右键菜单：upload to picbed
+Windows系统的图片文件添加右键菜单：upload to sapic
 -----------------------------------------------------
 
-如果你想在Windows资源管理器中，任意图片右键就能上传到picbed的话，OpenWithPlusPlus是个
+如果你想在Windows资源管理器中，任意图片右键就能上传到 sapic 的话，OpenWithPlusPlus是个
 不错的程序。
 
 github: `stax76/OpenWithPlusPlus <https://github.com/stax76/OpenWithPlusPlus>`_
@@ -242,13 +261,13 @@ github: `stax76/OpenWithPlusPlus <https://github.com/stax76/OpenWithPlusPlus>`_
 打开上述github地址，在release版本页面下载打包的zip压缩包解压，打开程序，
 先install（之后你需要重启下资源管理器或电脑），之后添加add新增右键菜单，部分参数解释如下：
 
-Name: 右键菜单名称，随便写
+Name: 右键菜单名称，随便写，比如 upload to sapic
 
 File Type: 设置为 `%image%` ，预设的变量
 
-Path：浏览选择picbed-cli程序路径
+Path：浏览选择 sapicli 程序路径
 
-Arguments: 设置picbed-cli命令行选项参数
+Arguments: 设置 sapicli 命令行选项参数，如 `-u https://Your-Sapic-URL -t xxx -c md "$@"`
 
 其他选项自定义，建议底部勾选上 `Run hidden`
 
@@ -258,14 +277,12 @@ Arguments: 设置picbed-cli命令行选项参数
 
 .. _picbed-upload-rightmenu-macos:
 
-macOS系统的图片文件添加右键菜单：upload to picbed
+macOS系统的图片文件添加右键菜单：upload to sapic
 --------------------------------------------------
 
 环境：macOS Cataline 10.15
 
-打开启动台-自动操作，新建文稿，类型是快速操作，选取确定后，按照如下示例填写：
-
-.. image:: https://static.saintic.com/picbed/staugur/2020/11/26/automator-rightmenu.png
+打开启动台-自动操作，新建文稿，类型是快速操作，选取确定后，参照以下解释填写：
 
 工作流程收到当前：**图像文件**
 
@@ -278,6 +295,12 @@ shell选择 **/bin/bash** ，传递输入选择 **作为自变量** ，脚本内
 
 .. code-block:: bash
 
-    picbed-cli -u https://picbed.pro -t xxx -c md "$@"
+    sapicli -u https://Your-Sapic-URL -t xxx -c md "$@"
 
-ps: picbed-cli需要下载到本地，使用绝对路径或放入PATH环境变量
+ps: sapicli 需要下载到本地（brew或git），使用绝对路径或放入PATH环境变量
+
+填写完成后，保存，保存的文件名随便，比如 upload to sapic
+
+参考示例：
+
+.. image:: https://static.saintic.com/picbed/staugur/2020/11/26/automator-rightmenu.png

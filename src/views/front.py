@@ -72,6 +72,7 @@ def admin():
 
 
 @bp.route("/picbed.user.js")
+@bp.route("/sapic.user.js")
 def userscript():
     if g.signin and is_true(g.userinfo.ucfg_userscript):
         resp = make_response(render_template("public/userscript.js"))
@@ -143,16 +144,27 @@ def ep(hook_name, route_name):
 def feed():
     pipe = g.rc.pipeline()
     uk = rsp("index", "user", g.userinfo.username)
-    fields = ["title", "filename", "ctime", "user", "src"]
+    fields = ["title", "filename", "ctime", "user", "src", "is_video"]
     for sha in g.rc.smembers(uk):
         pipe.hmget(rsp("image", sha), *fields)
     result = pipe.execute()
     data = [dict(zip(fields, i)) for i in result if i]
     xml = render_template('public/feed.xml', items=sorted(
         data,
-        key=lambda k: int(k.get('ctime')),
+        key=lambda k: int(k.get('ctime') or 0),
         reverse=True
     )[:10])
     response = make_response(xml)
     response.headers['Content-Type'] = 'application/xml'
     return response
+
+
+@bp.route("/publish")
+def publish():
+    gfs = [
+        dict(field="title_name", name=u"站点名称", default=g.site_name),
+        dict(field="beian", name=u"备案", default=""),
+        dict(field="upload_field", name=u"上传字段", default="picbed"),
+        dict(field="cors", name=u"跨域共享源站", default=""),
+    ]
+    return render_template("public/publish.html", gfs=gfs)

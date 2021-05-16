@@ -19,20 +19,23 @@ from flask import Blueprint, request, g, url_for, current_app, abort, \
     make_response, jsonify, Response
 from redis.exceptions import RedisError
 from collections import Counter
+from itertools import chain
 from utils.tool import parse_valid_comma, is_true, logger, sha1,\
     get_today, gen_rnd_filename, hmac_sha256, rsp, \
     sha256, get_current_timestamp, list_equal_split, generate_random, er_pat, \
     format_upload_src, check_origin, get_origin, check_ip, gen_uuid, ir_pat, \
     username_pat, ALLOWED_HTTP_METHOD, is_all_fail, parse_valid_colon, \
-    check_ir, less_latest_tag, check_url
+    check_ir, less_latest_tag, check_url, parse_label, allowed_file, \
+    ALLOWED_VIDEO
 from utils.web import dfr, admin_apilogin_required, apilogin_required, \
-    set_site_config, check_username, Base64FileStorage, change_res_format, \
+    set_site_config, check_username, Base64FileStorage, FormFileStorage, \
     ImgUrlFileStorage, get_upload_method, _pip_install, make_email_tpl, \
     generate_activate_token, check_activate_token, try_proxy_request, \
     sendmail, _pip_list, get_user_ip, has_image, guess_filename_from_url, \
-    allowed_suffix, async_sendmail
+    allowed_suffix, async_sendmail, change_res_format, up_size_limit
 from utils._compat import iteritems, thread
 from utils.exceptions import ApiError
+from config import GLOBAL
 
 bp = Blueprint("api", "api")
 
@@ -51,6 +54,45 @@ def get_url_with_suffix(d, _type):
     return d["src"]
 
 
+def gen_url_tpl(data):
+    """根据图片数据返回src各种模板
+    :param dict data: image data
+    """
+    def get_video(src):
+        return (
+            "<figure>"
+            "<iframe src='%s' frameborder=0 allow='allowfullscreen'></iframe>"
+            "</figure>"
+        ) % src
+    n = data["filename"]
+    tpl = dict(
+        URL="%s" % get_url_with_suffix(data, "url"),
+    )
+    if is_true(data.get("is_video")):
+        tpl.update(
+            HTML="<video src='%s' title='%s' controls></video>" % (
+                get_url_with_suffix(data, "html"),
+                data.get("title", "")
+            ),
+            rST=".. raw:: html\n\n\t%s" % get_video(
+                get_url_with_suffix(data, "rst")
+            ),
+            Markdown=get_video(get_url_with_suffix(data, "rst")),
+        )
+    else:
+        tpl.update(
+            HTML="<img src='%s' title='%s' alt='%s'>" % (
+                get_url_with_suffix(data, "html"),
+                data.get("title", ""), n
+            ),
+            rST=".. image:: %s" % get_url_with_suffix(data, "rst"),
+            Markdown="![%s](%s)" % (
+                n, get_url_with_suffix(data, "markdown")
+            ),
+        )
+    return tpl
+
+
 @bp.after_request
 def api_after_handler(res):
     if res.is_json:
@@ -67,7 +109,9 @@ def api_after_handler(res):
 @bp.route("/index", methods=["GET", "POST"])
 def index():
     return jsonify(
-        "Hello %s" % (g.userinfo.username if g.signin else "picbed")
+        "Hello %s" % (
+            g.userinfo.username if g.signin else GLOBAL["ProcessName"]
+        )
     )
 
 
@@ -398,12 +442,17 @@ def user():
                         d["status"] = 1
                     if d.get("email_verified") is None:
                         d["email_verified"] = 0
+                    #: .. versionchanged:: 1.12.0
+                    #:
+                    #: 用户允许多label，以逗号分隔
+                    label = parse_label(d.get("label"))
                     d.update(
                         is_admin=is_true(d["is_admin"]),
                         ctime=int(d["ctime"]),
                         status=int(d.get("status", 1)),
                         email_verified=int(d.get("email_verified", 1)),
                         login_at=int(d.get("login_at") or 0),
+                        label=label,
                     )
                     if d.get("mtime"):
                         d["mtime"] = int(d["mtime"])
@@ -574,7 +623,9 @@ def user():
             except RedisError:
                 res.update(msg="Program data storage service error")
             else:
-                res.update(code=0, data=list(set([l for l in data if l])))
+                labels = [parse_label(lb) for lb in data]
+                labels = list(chain.from_iterable(labels))
+                res.update(code=0, data=list(set(labels)))
     return res
 
 
@@ -639,7 +690,7 @@ def github():
             res.update(code=0, data=json.loads(data))
         else:
             url = "https://api.github.com/repos/{}/contents/{}".format(
-                "staugur/picbed-awesome", "list.json",
+                "sapicd/awesome", "list.json",
             )
             headers = dict(Accept='application/vnd.github.v3.raw')
             try:
@@ -715,7 +766,7 @@ def github():
         if no_fresh and data:
             res.update(code=0, data=json.loads(data))
         else:
-            url = "https://api.github.com/repos/staugur/picbed/releases/latest"
+            url = "https://api.github.com/repos/sapicd/sapic/releases/latest"
             try:
                 r = try_proxy_request(url, method='GET')
                 if not r.ok:
@@ -755,6 +806,7 @@ def token():
                 hmac_sha256(key, usr)
             )).encode("utf-8")
         ).decode("utf-8")
+
     Action = request.args.get("Action")
     if Action == "create":
         if g.rc.hget(ak, "token"):
@@ -974,6 +1026,8 @@ def waterfall():
                         i.update(
                             senders=json.loads(i["senders"]),
                             ctime=int(i["ctime"]),
+                            is_video=is_true(i.get("is_video")),
+                            tpl=gen_url_tpl(i),
                         )
                         if ask_albums:
                             if i.get("album") in ask_albums:
@@ -1012,21 +1066,11 @@ def shamgr(sha):
     if request.method == "GET":
         if has_image(sha):
             data = g.rc.hgetall(ik)
-            n = data["filename"]
             data.update(
                 senders=json.loads(data["senders"]) if g.is_admin else None,
                 ctime=int(data["ctime"]),
-                tpl=dict(
-                    URL="%s" % get_url_with_suffix(data, "url"),
-                    HTML="<img src='%s' title='%s' alt='%s'>" % (
-                        get_url_with_suffix(data, "html"),
-                        data.get("title", ""), n
-                    ),
-                    rST=".. image:: %s" % get_url_with_suffix(data, "rst"),
-                    Markdown="![%s](%s)" % (
-                        n, get_url_with_suffix(data, "markdown")
-                    )
-                )
+                tpl=gen_url_tpl(data),
+                is_video=is_true(data.get("is_video")),
             )
             res.update(code=0, data=data)
         else:
@@ -1099,6 +1143,9 @@ def shamgr(sha):
             if not has_image(sha):
                 return abort(404)
             data = g.rc.hgetall(ik)
+            #: 限制只有图片所属用户可以覆盖上传
+            if g.userinfo.username != data["user"]:
+                return abort(403)
             sender = data["sender"]
             proxy = g.hm.proxy(sender)
             if proxy:
@@ -1148,7 +1195,9 @@ def upload():
     """
     res = dict(code=1, msg=None)
     #: 文件域或base64上传字段
-    FIELD_NAME = g.cfg.upload_field or "picbed"
+    FIELD_NAME = g.cfg.upload_field or request.form.get(
+        "_upload_field"
+    ) or "picbed"
     #: 匿名上传开关检测
     if not is_true(g.cfg.anonymous) and not g.signin:
         raise ApiError("Anonymous user is not sign in", 403)
@@ -1176,7 +1225,9 @@ def upload():
     #: 尝试读取上传数据
     fp = request.files.get(FIELD_NAME)
     #: 当fp无效时尝试读取base64或url
-    if not fp:
+    if fp:
+        fp = FormFileStorage(fp)
+    else:
         picstrurl = request.form.get(FIELD_NAME)
         filename = secure_filename(request.form.get("filename") or "")
         if picstrurl:
@@ -1188,32 +1239,39 @@ def upload():
                     #: base64在部分场景发起http请求时，+可能会换成空格导致异常
                     fp = Base64FileStorage(picstrurl, filename)
                 except ValueError as e:
-                    logger.debug(e)
+                    raise ApiError(e)
     if fp and allowed_suffix(fp.filename):
+        size = fp.size
+        if size and size > up_size_limit():
+            raise ApiError("the uploaded file exceeds the limit", 413)
         stream = fp.stream.read()
         suffix = splitext(fp.filename)[-1]
+        is_video = 1 if allowed_file(fp.filename, ALLOWED_VIDEO) else 0
         #: 处理图片二进制的钩子
-        for h in g.hm.get_call_list(
-            "upimg_stream_processor", _type="func"
-        ):
-            rst = g.hm.proxy(h["name"]).upimg_stream_processor(stream, suffix)
-            if isinstance(rst, dict) and rst.get("code") == 0 and \
-                    isinstance(rst.get("data"), dict) and \
-                    rst["data"].get("stream"):
-                stream = rst["data"]["stream"]
-        for h in g.hm.call(
-            "upimg_stream_interceptor",
-            _args=(stream, suffix),
-            _mode="any_false",
-        ):
-            if h.get("code") != 0:
-                res.update(
-                    msg="Interceptor processing rejection, upload aborted",
-                    errors={
-                        h["sender"]: h.get("msg")
-                    }
+        if not is_video:
+            for h in g.hm.get_call_list(
+                "upimg_stream_processor", _type="func"
+            ):
+                rst = g.hm.proxy(h["name"]).upimg_stream_processor(
+                    stream, suffix
                 )
-                return res
+                if isinstance(rst, dict) and rst.get("code") == 0 and \
+                        isinstance(rst.get("data"), dict) and \
+                        rst["data"].get("stream"):
+                    stream = rst["data"]["stream"]
+            for h in g.hm.call(
+                "upimg_stream_interceptor",
+                _args=(stream, suffix),
+                _mode="any_false",
+            ):
+                if h.get("code") != 0:
+                    res.update(
+                        msg="Interceptor processing rejection, upload aborted",
+                        errors={
+                            h["sender"]: h.get("msg")
+                        }
+                    )
+                    return res
         #: 定义图片文件名
         filename = secure_filename(fp.filename)
         if "." not in filename:
@@ -1244,11 +1302,38 @@ def upload():
             includes = [choice(includes)]
         #: 当用户有标签且定义了用户上传分组则尝试覆盖默认includes
         up_grp = g.cfg.upload_group
-        usr_label = g.userinfo.label if g.signin else "anonymous"
-        if up_grp and usr_label:
-            up_grp_rule = parse_valid_colon(up_grp) or {}
-            if usr_label in up_grp_rule:
-                includes = [up_grp_rule[usr_label]]
+        up_grp_rule = parse_valid_colon(up_grp) or {}
+        if g.signin:
+            usr_label = g.userinfo.label
+            if up_grp_rule and usr_label:
+                for label in usr_label:
+                    if label in up_grp_rule:
+                        includes = [up_grp_rule[label]]
+                        break
+            #: 按照上传标签限制用户上传数量 小于0直接禁止上传 0不限制 大于0即为限制数量
+            up_limit_rule = parse_valid_colon(g.cfg.upload_limit) or {}
+            if up_limit_rule and usr_label:
+                #: TODO Fix homepage 多线程并发上传数量读取错误（读完但未写入redis）
+                usr_current_upsize = g.rc.scard(
+                    rsp("index", "user", g.userinfo.username)
+                )
+                for label in usr_label:
+                    if label in up_limit_rule:
+                        #: 进入此处表明用户存在标签被限制
+                        limit_num = up_limit_rule[label]
+                        try:
+                            limit_num = int(limit_num)
+                        except (ValueError, TypeError):
+                            pass
+                        else:
+                            if limit_num < 0:
+                                raise ApiError("User uploads are limited")
+                            elif limit_num > 0:
+                                if usr_current_upsize >= limit_num:
+                                    raise ApiError("User uploads are limited")
+        else:
+            if up_grp:
+                includes = [up_grp_rule["anonymous"]]
         #: TODO 定义保存图片时排除某些钩子，如: up2local, up2other
         #: excludes = parse_valid_comma(g.cfg.upload_excludes or '')
         #: 调用钩子中upimg_save方法（目前版本最终结果中应该最多只有1条数据）
@@ -1277,11 +1362,7 @@ def upload():
             return res
         #: 存储数据
         defaultSrc = data[0]["src"]
-        pipe = g.rc.pipeline()
-        pipe.sadd(rsp("index", "global"), sha)
-        if g.signin and g.userinfo.username:
-            pipe.sadd(rsp("index", "user", g.userinfo.username), sha)
-        pipe.hmset(rsp("image", sha), dict(
+        meta = dict(
             sha=sha,
             album=album.strip(),
             filename=filename,
@@ -1297,7 +1378,13 @@ def upload():
             ),
             method=get_upload_method(fp.__class__.__name__),
             title=request.form.get("title") or "",
-        ))
+            is_video=is_video,
+        )
+        pipe = g.rc.pipeline()
+        pipe.sadd(rsp("index", "global"), sha)
+        if g.signin and g.userinfo.username:
+            pipe.sadd(rsp("index", "user", g.userinfo.username), sha)
+        pipe.hmset(rsp("image", sha), meta)
         if expire > 0:
             pipe.expire(rsp("image", sha), expire)
         try:
@@ -1309,20 +1396,11 @@ def upload():
             res.update(
                 code=0,
                 filename=filename,
-                sender=data[0]["sender"],
+                sender=meta["sender"],
                 api=url_for("api.shamgr", sha=sha, _external=True),
                 sha=sha,
-                tpl=dict(
-                    URL="%s" % get_url_with_suffix(data[0], "url"),
-                    HTML="<img src='%s' title='%s' alt='%s'>" % (
-                        get_url_with_suffix(data[0], "html"),
-                        data[0].get("title", ""), filename
-                    ),
-                    rST=".. image:: %s" % get_url_with_suffix(data[0], "rst"),
-                    Markdown="![%s](%s)" % (
-                        filename, get_url_with_suffix(data[0], "markdown")
-                    )
-                ),
+                tpl=gen_url_tpl(meta),
+                is_video=is_video == 1,
             )
             #: format指定图片地址的显示字段，默认src，可以用点号指定
             #: 比如data.src，那么返回格式{code, filename..., data:{src}, ...}
@@ -1337,6 +1415,7 @@ def upload():
 @bp.route("/extendpoint", methods=["POST"])
 def ep():
     """专用于钩子扩展API方法"""
+    #: TODO 接口随意可访问扩展内方法，存在安全风险
     Object = request.args.get("Object")
     Action = request.args.get("Action")
     if Object and Action:
@@ -1647,7 +1726,7 @@ def report(classify):
 @bp.route("/load", methods=["POST"])
 @apilogin_required
 def load():
-    """把图片导入系统"""
+    """把图片/视频导入系统"""
     res = dict(code=1)
     #: 应该提交JSON数据，是一个数组，元素是字典对象
     #: 其字段必须有url，建议filename，可选title、album
@@ -1694,6 +1773,7 @@ def load():
                 ),
                 method="load",
                 title=img.get("title") or "",
+                is_video=1 if allowed_file(filename, ALLOWED_VIDEO) else 0,
             ))
             try:
                 pipe.execute()

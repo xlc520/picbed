@@ -4,6 +4,63 @@
 更新日志
 =========
 
+v1.13.0
+--------
+
+Released in 2021-05-15
+
+功能：
+  - 管理员控制台 `Ctrl/Command + S` 快捷键保存配置
+  - 关于本站：公开了部分公共信息
+  - 上传字段用户可由 `_upload_field` 自行指定。
+  - 上传视频功能（及周边兼容），api、cli、homepage均支持
+
+优化：
+  - 上传大小限制，后端接口实现
+
+更改：
+  - 部分picbed字样更改为sapic
+    - 更新文档
+    - 更新hook
+    - 配置读取环境变量时兼容sapic前缀
+    - docker镜像同时上传 staugur/picbed 和 staugur/sapic
+  - cli客户端命令行工具兼容
+
+修复：
+  - 尝试性修复 nginx with docker 模式下 local 生成 https url 问题（感谢@Nestle）
+
+v1.12.0
+--------
+
+Released in 2021-01-20
+
+.. image:: /_static/images/sapic.png
+
+项目正式命名为 **sapic**
+
+功能：
+  - 图片覆盖上传
+
+  - 按照用户label设置上传图片限制
+
+优化：
+  - 用户设置label时允许多个label
+
+  - 显示图片信息时优化sha，增加复制
+
+更改：
+  - CICD由 Travis-CI 改为 GitHub Actions
+
+  - 文档/源码适应正式名称的大更新！
+  
+    - 程序进程名更改为sapic，进程配置文件改为sapicd.py
+
+    - api.index显示hello picbed(未登录时)改为hello sapic
+
+    - 源码仓库统一放入 `sapicd <https://github.com/sapicd>`_ 组织中
+
+    - picbed-cli命令行客户端发布新版v0.5.0，可执行程序名改为 **sapicli**
+
 v1.11.0
 --------
 
@@ -14,7 +71,7 @@ Released in 2020-12-15
 
     - cli.py win10 通知功能
     - emmmm, 然后cli.py就被废弃，全部功能用golang重写，命名为
-      `picbed-cli <https://github.com/staugur/picbed-cli>`_
+      `picbed-cli <https://github.com/sapicd/cli>`_
     - 命令行文档更新，cli.py文档仍然保留
 
   - 图片分享功能
@@ -109,7 +166,7 @@ Released in 2020-08-23
   - 设置项增加代理（程序部分对外请求自动调用代理）、新注册用户默认标签
   - 上传图片增加title描述字段，首页上传支持
   - 支持上传临时图片（首页上传不支持，misc/cli.py支持），过期（秒）后清除数据
-  - 控制台安装第三方增加类似于应用商店功能，从 `picbed-awesome <https://github.com/staugur/picbed-awesome>`_ 获取开源审核的钩子扩展
+  - 控制台安装第三方增加类似于应用商店功能，从 `picbed-awesome <https://github.com/sapicd/awesome>`_ 获取开源审核的钩子扩展
   - 添加 :func:`utils.web.set_page_msg` 向管理员控制台发出消息（类似flash）
   - 独立的misc/cli.py命令行上传脚本支持title、expire参数
   - 支持新模式：触发与捕获 :class:`utils.exceptions.ApiError` :class:`utils.exceptions.PageError` 异常
@@ -223,4 +280,4 @@ Released in 2020-06-23
 Previous Versions
 -----------------
 
-Go to `GitHub Releases <https://github.com/staugur/picbed/releases>`_
+Go to `GitHub Releases <https://github.com/sapicd/sapic/releases>`_

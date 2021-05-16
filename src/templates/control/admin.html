@@ -18,8 +18,11 @@
     .layui-inline, img {
         display: inline;
     }
+    .upload-textarea {
+        min-height: 60px;
+    }
     .my-textarea {
-        min-height: 50px;
+        min-height: 80px;
     }
 </style>
 {% endblock %}
@@ -46,7 +49,7 @@
                                         <label class="layui-form-label">站点名称</label>
                                         <div class="layui-input-block">
                                             <input type="text" name="title_name" value="{{ g.site.title_name }}"
-                                                placeholder="站点名称，统一标题后缀，默认picbed" autocomplete="off"
+                                                placeholder="站点名称，统一标题后缀，默认sapic" autocomplete="off"
                                                 class="layui-input">
                                         </div>
                                     </div>
@@ -85,7 +88,7 @@
                                         <label class="layui-form-label">登录欢迎文案</label>
                                         <div class="layui-input-block">
                                             <input type="text" name="login_title" value="{{ g.site.login_title }}"
-                                                placeholder="登录页面的标题文字，默认是：登录你的Picbed" autocomplete="off"
+                                                placeholder="登录页面的标题文字，默认是：登录你的Sapic" autocomplete="off"
                                                 class="layui-input">
                                         </div>
                                     </div>
@@ -153,6 +156,13 @@
                                                 class="layui-textarea my-textarea"></textarea>
                                         </div>
                                     </div>
+                                    <div class="layui-form-item layui-form-text">
+                                        <label class="layui-form-label">关于本站</label>
+                                        <div class="layui-input-block">
+                                            <textarea name="about" placeholder="本站的额外说明，通过页脚About展示" value=""
+                                                class="layui-textarea my-textarea"></textarea>
+                                        </div>
+                                    </div>
                                     {{ intpl("sitesetting") }}
                                 </div>
                             </fieldset>
@@ -174,7 +184,7 @@
                                                 id="tip-uploadbeforehtml"></i> 首页上传区域提示</label>
                                         <div class="layui-input-block">
                                             <textarea name="upload_beforehtml" placeholder="首页上传区域上方文字提示" value=""
-                                                class="layui-textarea"></textarea>
+                                                class="layui-textarea upload-textarea"></textarea>
                                         </div>
                                     </div>
                                     <div class="layui-form-item">
@@ -186,10 +196,10 @@
                                         </div>
                                     </div>
                                     <div class="layui-form-item">
-                                        <label class="layui-form-label">大小限制</label>
+                                        <label class="layui-form-label" title="{{ g.site.upload_size or 20 }}MB">大小限制</label>
                                         <div class="layui-input-block">
                                             <input type="number" step=1 name="upload_size" max="{{ config.MAX_UPLOAD }}" min="1"
-                                                value="{{ g.site.upload_size }}" placeholder="上传允许的大小，单位MB，默认是10"
+                                                value="{{ g.site.upload_size }}" placeholder="上传允许的大小，单位MB，默认是20"
                                                 autocomplete="off" class="layui-input">
                                         </div>
                                     </div>
@@ -216,6 +226,14 @@
                                         <div class="layui-input-block">
                                             <input type="text" name="upload_group" value="{{ g.site.upload_group }}"
                                                 placeholder="按用户标签设置上传后端，格式是label:sender，半角逗号分隔" autocomplete="off"
+                                                class="layui-input">
+                                        </div>
+                                    </div>
+                                    <div class="layui-form-item">
+                                        <label class="layui-form-label">分组上传限制</label>
+                                        <div class="layui-input-block">
+                                            <input type="text" name="upload_limit" value="{{ g.site.upload_limit }}"
+                                                placeholder="按标签限制上传数量，格式是label:number，半角逗号分隔" autocomplete="off"
                                                 class="layui-input">
                                         </div>
                                     </div>
@@ -270,6 +288,15 @@
                                             <input type="checkbox" name="upload_rule_overridden" lay-skin="switch"
                                                 lay-text="ON|OFF"
                                                 {% if is_true(g.site.upload_rule_overridden) %}checked="checked"
+                                                {% endif %} autocomplete="off" value="1">
+                                        </div>
+                                    </div>
+                                    <div class="layui-form-item">
+                                        <label class="layui-form-label">视频上传</label>
+                                        <div class="layui-input-block" style="width: auto;">
+                                            <input type="checkbox" name="upload_video" lay-skin="switch"
+                                                lay-text="ON|OFF"
+                                                {% if is_true(g.site.upload_video) %}checked="checked"
                                                 {% endif %} autocomplete="off" value="1">
                                         </div>
                                     </div>
@@ -412,7 +439,7 @@
                         <div class="layui-col-xs12 layui-col-sm12 layui-col-md12">
                             <div class="layui-form-item">
                                 <div class="layui-input-block">
-                                    <button class="layui-btn" lay-submit lay-filter="*">立即提交</button>
+                                    <button class="layui-btn" lay-submit lay-filter="*" id="saveSetting">立即提交</button>
                                     <button type="reset" class="layui-btn layui-btn-primary">重置</button>
                                 </div>
                             </div>
@@ -571,7 +598,7 @@
             var tip = [
                 '此代理用于程序请求外部HTTP[s]时(部分情况)，当首次请求超时、连接错误时自动调用代理。',
                 '<b>格式：</b>http[s]=proxy-server,scheme://hostname=proxy-server',
-                '详细请参考文档！',
+                '详细请参考<a href="https://picbed.rtfd.vip/admin.html#picbed-admin-system" target="_blank" style="color:red">文档</a>！',
             ];
             layer.tips(tip.join("<br>"), this, {tips: 1});
         });
@@ -606,6 +633,7 @@
         form.val("setting", {
             upload_beforehtml: picbed.escape2Html(`{{ g.site.upload_beforehtml }}`),
             bulletin: picbed.escape2Html(`{{ g.site.bulletin }}`),
+            about: picbed.escape2Html(`{{ g.site.about }}`),
         });
         //提交系统设置
         form.on('submit(*)', function(data){
@@ -640,6 +668,13 @@
                 data: data.field
             });
             return false;
+        });
+        //js监听键盘ctrl+s快捷键保存
+        document.addEventListener('keydown', function(e){
+            if ((location.hash === "#setting" || location.hash === "") && e.keyCode == 83 && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)){
+                e.preventDefault();
+                document.getElementById("saveSetting").click();
+            }
         });
         //钩子扩展管理
         var tableIns = table.render({
@@ -977,7 +1012,10 @@
                         field: 'label',
                         title: '标签',
                         edit: 'text',
-                        width: 80,
+                        width: 90,
+                        templet: function(d) {
+                            return d.label.join(",");
+                        }
                     },
                     {
                         field: 'is_admin',

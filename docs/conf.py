@@ -17,7 +17,7 @@ from version import __version__ as version
 
 # -- Project information -----------------------------------------------------
 
-project = 'SaintIC Picbed'
+project = 'sapic'
 copyright = '2020, staugur'
 author = 'staugur'
 release = version
@@ -65,7 +65,7 @@ html_show_sourcelink = False
 html_theme_options = {
     'external_links': [
         ("Demo", "http://demo.picbed.pro"),
-        ("GitHub", "https://github.com/staugur/picbed"),
+        ("GitHub", "https://github.com/sapicd/sapic"),
         ("Gitee", "https://gitee.com/staugur/picbed"),
     ],
 }

@@ -52,7 +52,11 @@
         <div class="layui-upload-area">
             <div class="layui-upload-drag" id="upload">
                 <i class="layui-icon layui-icon-upload"></i>
-                <p>点击、粘贴或拖拽到此处上传<br>允许{{ (g.site.upload_exts or 'jpg|png|gif|bmp|jpeg|webp').split('|')|join(',') }}图片</p>
+                <p>点击、粘贴或拖拽到此处上传
+                    <br>允许 {{ (g.site.upload_exts or 'jpg|png|gif|bmp|jpeg|webp').split('|')|join(',') }} 图片
+                    {% if is_true(g.cfg.upload_video) %}
+                    <br>允许 mp4,ogg,ogv,webm,3gp,mov 视频{% endif %}
+                </p>
             </div>
             <div class="layui-upload-list">
                 <button type="button" class="layui-btn layui-btn-xs layui-hide" id="action">开始上传</button>
@@ -92,7 +96,16 @@
             number = parseInt("{{ g.site.upload_number or 10 }}"),
             field = "{{ g.cfg.upload_field or 'picbed' }}",
             upviewDom = $('#previewList'),
+            upVideo = parseInt("{{ g.cfg.upload_video }}") === 1,
+            accept =  upVideo ? "file" : "images",
+            acceptMime = "image/*",
+            videoMimes = ["video/mp4","video/ogg","video/webm","video/3gpp","video/quicktime"],
             imgUrlRe = /(http|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&:/~\+#]*[\w\-\@?^=%&/~\+#])?/;
+
+        if (upVideo) {
+            acceptMime += "," + videoMimes.join(",")
+            exts += "|mp4|ogg|ogv|webm|3gp|mov"
+        }
 
         var showUploadCopy = function (res) {
             res["get_src"] = function() {
@@ -183,7 +196,8 @@
                 origin: "homepage/{{ Version }}",
                 title: "",
             },
-            accept: 'images',
+            accept: accept,
+            acceptMime: acceptMime,
             exts: exts,
             multiple: true,
             auto: false,
@@ -204,9 +218,14 @@
                 $("#action").removeClass("layui-hide");
                 $(".layui-table:first").removeClass("layui-hide");
                 obj.preview(function (index, file, result) {
+                    let isVideo = videoMimes.includes(file.type),
+                        preview = '<img src="' + result + '" style="max-width:50px" class="layui-upload-img">';
+                    if (isVideo) {
+                        preview = '<i class="saintic-icon saintic-icon-video-1"></i>';
+                    }
                     var tr = $([
                         '<tr id="upload-' + index + '">',
-                        '<td class="a"><img src="' + result + '" style="max-width:50px" class="layui-upload-img"></td>',
+                        '<td class="a">' + preview + '</td>',
                         '<td class="b">' + (picbed.isMobile ? file.type.replace(/^image\//, '') : file.name) + '</td>',
                         '<td class="c">' + (file.size / 1024).toFixed(1) + '</td>',
                         '<td class="d">等待</td>',

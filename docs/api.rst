@@ -61,7 +61,7 @@ RESTful API
 
   Api首页，仅用来表明登录态，允许 :http:method:`post` :http:method:`get` 方法
 
-  返回: Hello picbed(未登录)/<username>(已登录)
+  返回: Hello sapic(未登录)/<username>(已登录)
 
 2. api.login
 -------------
@@ -293,6 +293,29 @@ RESTful API
 
     album=newName
 
+.. http:post:: /api/shamgr/<string:sha>
+
+  与PUT类似，也是图片更新接口，要求登录，只有图片所属用户允许操作。
+
+  :param sha: 图片的唯一标识
+  :type sha: string
+  :query string Action: 更新指令，目前仅支持一个overrideUpload（覆盖上传）
+  :form picbed: 上传字段，表单图片文件
+  :statuscode 404: 没有对应图片时
+  :statuscode 403: 未登录或图片所属用户与请求用户不匹配
+
+  **示例：**
+
+  .. http:example:: curl python-requests
+
+    POST /api/shamgr/sha1.xxxxxxx HTTP/1.0
+    Host: 127.0.0.1:9514
+    Authorization: LinkToken Your-LinkToken-Value
+    Content-Type: multipart/form-data
+
+    :query Action: overrideUpload
+
+    picbed=@new-image-path
 
 6. api.album
 -----------------
@@ -355,15 +378,29 @@ RESTful API
 
     增加title和expire字段，前者设置图片描述，后者添加为临时图片
 
-  获取上传数据的字段默认是picbed，管理员可以在控制台修改，但是不建议改，
-  如果要改，首页上传会自动更新，但引用uploader.js在外部上传的话，那就需要
-  设置 **name** 值，具体参考 :ref:`LinkToken-upload-plugin` ，有一个name选项
-  可以设置其他值。
+  .. versionchanged:: 1.13.0
+
+    真正实现上传限制！
+
+    之前的版本在后台设置的上传限制仅仅在首页上传时由前端限制，后端接口并无限制，
+    现在『弯道超车』目前三种上传方式都有size接口读取上传大小进而限制。
+
+    增加了 `_upload_field` 指定上传字段。
+
+    允许上传视频（beta）！
+
+  .. note::
+
+    获取上传数据的字段默认是picbed，管理员可以在控制台修改，但是不建议改，
+    如果要改，首页上传会自动更新，但引用uploader.js在外部上传的话，那就需要
+    设置 **name** 值，具体参考 :ref:`LinkToken-upload-plugin` ，有一个name选项
+    可以设置其他值。
 
   :query string format: 指定图片地址的显示字段
   :form format: 等于query查询参数的format
   :form album: 图片所属相册（匿名时总是直接设置为anonymous）
-  :form picbed: 上传字段名
+  :form _upload_field: 指定上传字段，否则依次读取后台设置、默认值（picbed）
+  :form picbed: 上传字段名（可由后台设置）
   :form title: 图片简单描述，页面显示时作为title
   :form expire: 表明上传临时图片，int类型，单位秒，过期删除数据（不会物理删除图片）
   :form filename: 使用 **base64/url** 方式上传时此值有效，设定文件名
@@ -559,6 +596,10 @@ RESTful API
   图片导入接口，即可以将已存在其他位置的远程图片导入到系统中。
 
   目前仅支持通过接口方式，提交JSON数组。
+
+  .. versionchanged:: 1.13.1
+
+    兼容了视频导入
 
   :reqjsonarr str url: 图片地址
   :reqjsonarr str filename: 图片文件名[建议填写]

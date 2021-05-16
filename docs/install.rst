@@ -11,9 +11,9 @@
 
 --------------
 
-源码地址： https://github.com/staugur/picbed
+源码地址： https://github.com/sapicd/sapic
 
-正式版本： https://github.com/staugur/picbed/releases
+正式版本： https://github.com/sapicd/sapic/releases
 
 内容说明： 以下部署文档适用于有一点linux基础的同学，大概涉及到yum、git、docker等命令，以及redis、nginx等服务。
 
@@ -90,21 +90,21 @@ dev分支的功能完成后会合并到master分支；
 一阶段功能完成会从master分支发版。
 
 - 开发版（dev）
-    ! 建议，如果你有git，可以：\ ``git clone -b dev https://github.com/staugur/picbed``
+    ! 建议，如果你有git，可以：\ ``git clone -b dev https://github.com/sapicd/sapic picbed``
 
     ! 也可以下载压缩包：
 
     .. code-block:: bash
 
-        $ wget -O picbed.zip https://codeload.github.com/staugur/picbed/zip/dev
+        $ wget -O picbed.zip https://codeload.github.com/sapicd/sapic/zip/dev
         $ unzip picbed.zip 
         $ mv picbed-dev picbed
 
 - 尝鲜版（master）
-    ``git clone https://github.com/staugur/picbed``
+    ``git clone https://github.com/sapicd/sapic picbed``
 
 - 正式版（release）
-    ! 到 `release <https://github.com/staugur/picbed/releases>`_ 页面下载正式版本的包。
+    ! 到 `release <https://github.com/sapicd/sapic/releases>`_ 页面下载正式版本的包。
 
 2.2 安装依赖
 ^^^^^^^^^^^^^^
@@ -180,44 +180,48 @@ optional.txt是系统可选功能依赖的模块（可选）。
 ^^^^^^^^^^^^^^
 
 配置文件是源码src目录下的config.py，它会加载同级目录 **.cfg** 文件读取配置信息，
-无法找到时再加载环境变量，最后使用默认值，必需的配置项是picbed_redis_url。
+无法找到时再加载环境变量，最后使用默认值，必需的配置项是sapic_redis_url。
 
 所以可以把配置项写到 `.bash_profile` 或 `.bashrc` 此类文件中在登录时作为环境变量加载，
-也可以写入到 `.cfg` 文件里（picbed/src/目录下），这是推荐的方式，
+也可以写入到 `.cfg` 文件里（源码 src 目录下），这是推荐的方式，
 它不会被提交到仓库，格式是k=v，每行一条，注意：
 v是所见即所得（不要有多余的引号等，除非真的需要）！
 
-比如: `picbed_redis_url=redis://@localhost`
+比如: `sapic_redis_url=redis://@localhost`
 
 可设置列表如下：
 
 ================  ==========================  ===============   ====================================================================
     配置              [环境]变量名                默认值                                       说明
 ================  ==========================  ===============   ====================================================================
-HOST              picbed_host                 127.0.0.1         监听地址
-PORT              picbed_port                  9514             监听端口
-LOGLEVEL          picbed_loglevel              DEBUG            日志级别，可选DEBUG, INFO, WARNING, ERROR, CRITICAL
-**REDIS**         picbed_redis_url             无               核心数据存储（redis连接串，格式是：redis://[:password]@host:port/db）
-SecretKey         picbed_secretkey             (大长串)         App应用秘钥(默认有固定值)
-MaxUpload         picbed_maxupload             20               设定程序最大上传容量，单位MB
+HOST              sapic_host                  127.0.0.1         监听地址
+PORT              sapic_port                  9514              监听端口
+LOGLEVEL          sapic_loglevel              DEBUG             日志级别，可选DEBUG, INFO, WARNING, ERROR, CRITICAL
+**REDIS**         sapic_redis_url             无                核心数据存储（redis连接串，格式是：redis://[:password]@host:port/db）
+SecretKey         sapic_secretkey             (大长串)          App应用秘钥(默认有固定值)
+MaxUpload         sapic_maxupload             20                设定程序最大上传容量，单位MB
 ================  ==========================  ===============   ====================================================================
 
-更多参数请参考config.py配置文件中的注释。
+更多参数请参考 config.py 配置文件中的注释。
 
 !!!以上参数 **REDIS** 无默认值，必须根据实际情况手动设置，
 示例如下（可以写入.bash\_profile中）：
 
 .. code-block:: bash
 
-    $ export picbed_redis_url="redis://:password@127.0.0.1:6379/1"
+    $ export sapic_redis_url="redis://:password@127.0.0.1:6379/1"
     或者写入文件
     $ cat .cfg
-    picbed_redis_url=redis://:password@127.0.0.1:6379/1
+    sapic_redis_url=redis://:password@127.0.0.1:6379/1
 
 .. versionchanged:: 1.6.0
 
     v1.6.0支持redis cluster集群连接，格式：``rediscluster://host:port,host:port...``
     其他地方无需修改，暂不支持密码
+
+.. versionchanged:: 1.13.0
+
+    配置读取环境变量时支持sapic前缀，比如picbed_host，优先读取sapic_host
 
 .. tip:: 
 
@@ -275,7 +279,7 @@ Nginx配置示例如下，您也可以配置使其支持HTTPS:
         #可以设置不允许搜索引擎抓取信息
         #处理静态资源，root路径根据实际情况修改
         location ~ ^\/static\/.*$ {
-            root /path/to/picbed/src/;
+            root /path/to/<程序目录>/src/;
         }
         location / {
             #9514是默认端口，根据实际情况修改
@@ -383,6 +387,6 @@ NO.5 程序升级
     .. warning::
 
         up2cos、up2oss两个钩子从内置移除了，独立成第三方，分别是：
-        `staugur/picbed-up2cos <https://github.com/staugur/picbed-up2cos>`_ 、
-        `staugur/picbed-up2oss <https://github.com/staugur/picbed-up2oss>`_
+        `staugur/picbed-up2cos <https://github.com/sapicd/up2cos>`_ 、
+        `staugur/picbed-up2oss <https://github.com/sapicd/up2oss>`_
 

@@ -191,7 +191,7 @@ Chrome, Microsoft Edge, Safari, Opera Next, 和 Firefox。
 
 |picbed_userscript|
 
-脚本地址： `Your Picbed URL/picbed.user.js`
+脚本地址： `Your Picbed URL/picbed.user.js` 或 `Your Sapic URL/sapic.user.js`
 
 只有开启用户脚本后才能产生脚本链接，不严格要求填写LinkToken，但是没有的话将
 会是匿名上传且不支持脚本更新。
@@ -279,7 +279,7 @@ LinkToken哪个接口，以及认证与授权结果。
 
     开发版本
 
-        $ pip install -U git+https://github.com/staugur/picbed-up2smms.git@master
+        $ pip install -U git+https://github.com/sapicd/up2smms.git@master
 
 添加钩子成功有提示，有些会附带模板，所以需要刷新下页面，比如上面这个会在
 站点设置的钩子配置区域追加模板：
@@ -323,6 +323,10 @@ Web中只有首页可以上传，同时最多选择10张，默认支持jpg、jpe
   符合 `http://` 或 `https://` 的合法URL会进入图片链接上传模式，
   :ref:`参考Upload Api <picbed-api-upload>`
 
+.. versionchanged:: 1.13.0
+
+    支持视频上传（beta），默认未开启，需要管理员开启。
+
 .. _picbed-upload-example:
 
 3.1 以下是几个客户端(通过API)上传的示例：
@@ -330,7 +334,7 @@ Web中只有首页可以上传，同时最多选择10张，默认支持jpg、jpe
 
 .. _picbed-upload-picgo:
 
-- 使用PicGo上传到自定义的picbed图床
+- 使用PicGo上传到图床
 
   `下载PicGo <https://github.com/Molunerfinn/PicGo/releases>`_ 并安装，打开
   主界面，在 **插件设置** 中搜索 **web-uploader** 并安装，然后
@@ -357,7 +361,7 @@ Web中只有首页可以上传，同时最多选择10张，默认支持jpg、jpe
 
 .. _picbed-upload-upic:
 
-- 使用uPic上传到自定义的picbed图床
+- 使用uPic上传到图床
 
   `下载uPic <https://github.com/gee1k/uPic>`_ 并安装，在 **偏好设置-图床** 中
   添加 **自定义**，信息如下：

@@ -1,7 +1,7 @@
 .. _picbed-modules:
 
 ==============
-Picbed Modules
+Modules API
 ==============
 
 下面仅列出可能有用的部分
@@ -25,6 +25,10 @@ Picbed Modules
 .. data:: ALLOWED_EXTS
 
     默认允许上传的图片后缀
+
+.. data:: ALLOWED_VIDEO
+
+    允许上传的视频后缀
 
 .. autofunction:: rsp
 
@@ -65,6 +69,8 @@ Picbed Modules
 .. autofunction:: bleach_html
 
 .. autofunction:: is_valid_verion
+
+.. autofunction:: b64size
 
 .. autoclass:: Mailbox
     :members:
@@ -114,6 +120,8 @@ Picbed Modules
 
 .. autofunction:: guess_filename_from_url
 
+.. autofunction:: get_allowed_suffix
+
 .. autofunction:: allowed_suffix
 
 .. autoclass:: Base64FileStorage
@@ -121,6 +129,10 @@ Picbed Modules
     :undoc-members:
 
 .. autoclass:: ImgUrlFileStorage
+    :members:
+    :undoc-members:
+
+.. autoclass:: FormFileStorage
     :members:
     :undoc-members:
 
